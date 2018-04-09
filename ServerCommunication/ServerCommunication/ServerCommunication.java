@@ -1,4 +1,4 @@
-package bankFinal;
+package ServerCommunication;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -43,6 +43,12 @@ public class ServerCommunication {
 		waitForResponse();
 	}
 	
+	public int requestObject() {
+		output.println("2");
+		System.out.println("I asked for AccountData from the server.");
+		return waitForObject();
+	}
+	
 	public void waitForResponse() {
 		Thread getString = new Thread() {
 			String mes = "";
@@ -63,24 +69,19 @@ public class ServerCommunication {
 		getString.start();
 	}
 	
-	public void waitForObject() {
-		Thread getObject = new Thread() {
-			AccountData ad;
-			public void run() {
-				while(true) {
-					try {
-						ad = (AccountData) objectInput.readObject();
-					}catch(Exception e) {
-					}
-					if(!(ad.equals(null))) {
-						data = ad;
-						System.out.println("Data object received.");
-						break;
-					}
-				}
+	private int waitForObject() {
+		AccountData ad = new AccountData(false, null, null, null, null, 1, null);
+		while(true) {
+			try {
+				ad = (AccountData) objectInput.readObject();
+			}catch(Exception e) {
 			}
-		};
-		getObject.start();
+			if(ad.getValid()) {
+				data = ad;
+				System.out.println("Data object received.");
+				return 0;
+			}
+		}
 	}
 	
 	public boolean isConnected() {

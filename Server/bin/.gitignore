@@ -1,0 +1,12 @@
+/.classpath
+/.project
+/AccountData.class
+/SQLReader.class
+/SSLServer.class
+/Server/
+/TestMain.class
+/bank_key_3_3_2018.cert
+/bank_key_3_3_2018.pub
+/myKeyStore.jks
+/serverMain.class
+/serverThread.class
