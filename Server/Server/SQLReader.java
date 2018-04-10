@@ -6,53 +6,23 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class SQLReader {
-	private Connection SQLConnection;
-	private String dbms = "mysql";
-	private String host = "gewadstudios.nl";
-	private String port = "3306";
-	private String data = "gewadstu_school";
-	private String user = "";
-	private String pass = "";
-	/*
-	public static void main(String[] args) {
-		System.out.println("I at lest got here you know this is better than not running at all.");
-		SQLReader SQL = new SQLReader("gewadstu_school","S_eK8^?FUam!");
-	}
-	*/
-	public SQLReader(String username, String passwd) {
-		user = username;
-		pass = passwd;
-		System.out.println("I got here at least you know gave it a shot.");
-		try {
-		SQLConnection = getConnection();
-		System.out.println("I tried to get a connection.");
-		} catch(SQLException e) {
-			System.out.println("I caught an error.");
-			e.printStackTrace();
-		}
+	public SQLReader() {
+		System.out.println("I act like a SQL reader but I am just a stub");
 	}
 	
-	public Connection getConnection() throws SQLException {
-
-	    Connection conn = null;
-	    Properties connectionProps = new Properties();
-	    connectionProps.put("user", this.user);
-	    connectionProps.put("password", this.pass);
-	    
-	    if (this.dbms.equals("mysql")) {
-	        conn = DriverManager.getConnection(
-	                   "jdbc:" + this.dbms + "://" +
-	                   this.host +
-	                   ":" + this.port + "/" + this.data,
-	                   this.user, this.pass);
-	    }
-	    System.out.println("I LIVE");
-	    if(conn.isValid(1000)) {
-	    	System.out.println("Connected to database");
-	    	return conn;
-	    }else {
-	    	System.out.println("Not connected to database");
-	    	return null;
-	    }
+	public int checkUID(String UID) {
+		if(UID.equals("kaartje")) {
+			return 0;
+		} else if(UID.equals("kaartje2")) {
+			return 2;
+		}
+		return 1;
+	}
+	
+	public AccountData checkData(String UID, String pin) {
+		if(UID.equals("kaartje") && pin.equals("6969")) {
+			return new AccountData(true, "1", "1", "Gerard", "van Walraven", 9, null);
+		}
+		return new AccountData(false, "", "", "", "", 2, null);
 	}
 }

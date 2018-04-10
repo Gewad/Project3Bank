@@ -12,10 +12,9 @@ public class serverThread extends Thread {
 	Socket socket;
 	BufferedReader input;
 	PrintStream output;
-	String message;
 	ObjectInputStream objectInput;
 	ObjectOutputStream objectOutput;
-	//private SQLReader SQL = new SQLReader("gewadstu_school","S_eK8^?FUam!");
+	private SQLReader SQL = new SQLReader();
 	
 	public serverThread(Socket inputSocket) {
 		this.socket = inputSocket;
@@ -31,25 +30,49 @@ public class serverThread extends Thread {
 	}
 	
 	public void run() {
-		System.out.println("Thread started for: " + socket.getInetAddress());
+
 		while(true) {
-			message = waitForInput();
+			String message = waitForInput();
 			System.out.println("Client: " + socket.getInetAddress() + " said " + message);
 			if(message.equals("1")){
-				System.out.println("Client: " + socket.getInetAddress() + " says Hi");
-				output.println("Hoi");
+				this.checkUID();
 			}
 			else if(message.equals("2")) {
-				System.out.println("Client: " + socket.getInetAddress() + " requests Object");
-				AccountData sendTest = new AccountData(true, message, message, message, message, 2, null);
-				try {
-					objectOutput.writeObject(sendTest);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				this.checkData();
 			}
 			message = "";
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
+		}
+	}
+	
+	public void checkUID() {
+		System.out.println("Client requested UIDCheck");
+		output.println("1");
+		String message = waitForInput();
+		output.println(Integer.toString(SQL.checkUID(message)));
+		System.out.println("I returned: ");
+	}
+	
+	public void checkData() {
+		String UID;
+		String pin;
+		output.println("1");
+		UID = waitForInput();
+		output.println("1");
+		pin = waitForInput();
+		output.println("1");
+		try {
+			Thread.sleep(3000);
+			System.out.println("Sending object.");
+			objectOutput.writeObject(SQL.checkData(UID, pin));
+		} catch (Exception e) {
+			System.out.println("Something went wrong with sending the object.");
+			try {
+				objectOutput.writeObject(new AccountData(false, "", "", "", "", 2, null));
+			} catch (IOException e1) {
+				System.out.println("Something went wrong with sending the second object.");
+				e1.printStackTrace();
+			}
 		}
 	}
 	
@@ -61,6 +84,7 @@ public class serverThread extends Thread {
 			}catch(Exception e) {
 			}
 			if(!mes.equals("")) {
+				System.out.println("Client: "+socket.getInetAddress()+" said: "+mes);
 				break;
 			}
 		}

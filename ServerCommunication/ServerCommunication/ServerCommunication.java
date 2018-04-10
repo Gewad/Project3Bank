@@ -1,6 +1,7 @@
 package ServerCommunication;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,86 +10,130 @@ import java.net.Socket;
 import Server.AccountData;
 
 public class ServerCommunication {
-	
+
+	String atmID;
 	String testPin = "2817";
 	Socket server;
 	BufferedReader input;
 	PrintStream output;
 	ObjectInputStream objectInput;
 	ObjectOutputStream objectOutput;
-	AccountData data;
-	String message;
+	protected AccountData data;
 	boolean connected = false;
-	
-	public ServerCommunication(String connection, int port){
+
+	public ServerCommunication(String connection, int port, String ATM) {
 		System.out.println("Imma try and connect now.");
 		try {
 			server = new Socket(connection, port);
 			input = new BufferedReader(new InputStreamReader(server.getInputStream()));
 			output = new PrintStream(server.getOutputStream());
 			objectInput = new ObjectInputStream(server.getInputStream());
-			//objectOutput = new ObjectOutputStream(server.getOutputStream());
-		}catch(Exception e) {
-			System.out.println("Connection ded af");
+			// objectOutput = new ObjectOutputStream(server.getOutputStream());
+		} catch (Exception e) {
 			connected = false;
 			return;
 		}
-		System.out.println("Connection established");
 		connected = true;
+		atmID = ATM;
 	}
-	
-	public void sayHi() {
-		output.println("1");
-		System.out.println("I said Hi to the server: " + server.getInetAddress());
-		waitForResponse();
-	}
-	
-	public int requestObject() {
-		output.println("2");
-		System.out.println("I asked for AccountData from the server.");
-		return waitForObject();
-	}
-	
-	public void waitForResponse() {
-		Thread getString = new Thread() {
-			String mes = "";
-			public void run() {
-				while(true) {
-					try {
-						mes = input.readLine();
-					}catch(Exception e) {
-					}
-					if(!mes.equals("")) {
-						message = mes;
-						System.out.println(message);
-						break;
-					}
-				}
-			}
-		};
-		getString.start();
-	}
-	
-	private int waitForObject() {
-		AccountData ad = new AccountData(false, null, null, null, null, 1, null);
-		while(true) {
+
+	public String waitForResponse() {
+		String mes = "";
+		while (true) {
 			try {
-				ad = (AccountData) objectInput.readObject();
-			}catch(Exception e) {
+				mes = input.readLine();
+			} catch (Exception e) {
 			}
-			if(ad.getValid()) {
-				data = ad;
-				System.out.println("Data object received.");
-				return 0;
+			if (!mes.equals("")) {
+				System.out.println("I received message: " + mes);
+				return mes;
 			}
 		}
 	}
-	
-	public boolean isConnected() {
-		return connected;
+
+	private AccountData waitForObject() {
+		AccountData ad = new AccountData(false, null, null, null, null, 1, null);
+		while (true) {
+			try {
+				ad = (AccountData) objectInput.readObject();
+			} catch (Exception e) {
+			}
+			if (ad.getValid()) {
+				return ad;
+			}
+		}
 	}
-	
-	public AccountData waitForAccountData() {
-		return null;
+
+	public int checkUID(String UID) {
+		output.println("1");
+		System.out.println("I requested a check on the current card from server: " + server.getInetAddress());
+		String message = waitForResponse();
+		if (message.equals("1")) {
+			output.println(UID);
+			message = waitForResponse();
+			int messageInt = Integer.parseInt(message);
+			return messageInt;
+		}
+		return 9;
+	}
+
+	public int checkData(String UID, String pin) {
+		output.println("2");
+		System.out.println("I requested the AccountData from server: " + server.getInetAddress());
+		String message = waitForResponse();
+		if (message.equals("1")) {
+			output.println(UID);
+			message = waitForResponse();
+			if (message.equals("1")) {
+				output.println(pin);
+				message = waitForResponse();
+				if (message.equals("1")) {
+					System.out.println("Waiting for object.");
+					data = waitForObject();
+					System.out.println("AccountData received.");
+					return 0;
+				}
+			}
+		}
+		return 7;
+	}
+
+	public int getSaldo(String rekeningID) {
+		return 0;
+	}
+
+	public void withdraw(String rekeningID, int amount) {
+		String amountString = Integer.toString(amount);
+
+		return;
+	}
+
+	public void transfer(String senderID, String targetID, int amount) {
+		String amountString = Integer.toString(amount);
+
+		return;
+	}
+
+	public int changePin(String currentPin, String newPin) {
+
+		return 5;
+	}
+
+	public void closeConnection() {
+		try {
+			server.close();
+			System.out.println("Connection closed.");
+			return;
+		} catch (IOException e) {
+		}
+		System.out.println("Connection couldn't be closed.");
+	}
+
+	public void addLog(String Customer, String Account, String page) {
+
+	}
+
+	public boolean isConnected() {
+		return this.connected;
 	}
 }
