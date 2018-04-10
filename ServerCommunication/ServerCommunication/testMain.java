@@ -42,18 +42,46 @@ public class testMain {
 						} else if(temp == 2) {
 							System.out.println("Card is blocked");
 						}
-					} else if(input.equals("")) {
+					} else if(input.equals("getSaldo")) {
+						System.out.print("Give accountID: ");
+						while(!sc.hasNextLine()) {}
+						String account = sc.nextLine();
+						System.out.println(server.getSaldo(account));
+						System.out.println("I sent Gerard's saldo.");
+					} else if(input.equals("withdraw")) {
+						System.out.print("Give accountID: ");
+						while(!sc.hasNextLine()) {}
+						String account = sc.nextLine();
+						System.out.print("Give amount: ");
+						while(!sc.hasNextLine()) {}
+						String amount = sc.nextLine();
+						server.withdraw(account, amount);
+					} else if(input.equals("transfer")) {
+						System.out.print("Give accountID: ");
+						while(!sc.hasNextLine()) {}
+						String account = sc.nextLine();
+						System.out.print("Give target: ");
+						while(!sc.hasNextLine()) {}
+						String target = sc.nextLine();
+						System.out.print("Give amount: ");
+						while(!sc.hasNextLine()) {}
+						String amount = sc.nextLine();
+						server.transfer(account, target, amount);
+					} else if(input.equals("changePin")) {
 						System.out.print("Give UID: ");
 						while(!sc.hasNextLine()) {}
 						String UID = sc.nextLine();
-						int temp = server.checkUID(UID);
-						if(temp == 0) {
-							System.out.println("Card is recognised and not blocked.");
-						} else if(temp == 1) {
-							System.out.println("Card is not recognised.");
-						} else if(temp == 2) {
-							System.out.println("Card is blocked");
-						}
+						System.out.print("Give currentPin: ");
+						while(!sc.hasNextLine()) {}
+						String currentPin = sc.nextLine();
+						System.out.print("Give newPin: ");
+						while(!sc.hasNextLine()) {}
+						String newPin = sc.nextLine();
+						server.changePin(UID, currentPin, newPin);
+					} else if(input.equals("stop")) {
+						server.closeConnection();
+						sc.close();
+						break;
 					}
 				}
 			}

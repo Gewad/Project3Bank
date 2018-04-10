@@ -99,24 +99,49 @@ public class ServerCommunication {
 	}
 
 	public int getSaldo(String rekeningID) {
+		output.println("3");
+		String message = waitForResponse();
+		if(message.equals("1")) {
+			output.println(rekeningID);
+			message = waitForResponse();
+			int messageInt = Integer.parseInt(message);
+			return messageInt;
+		}
 		return 0;
 	}
 
-	public void withdraw(String rekeningID, int amount) {
-		String amountString = Integer.toString(amount);
-
-		return;
+	public int withdraw(String rekeningID, String amount) {
+		output.println("4");
+		String message = waitForResponse();
+		output.println(rekeningID);
+		message = waitForResponse();
+		output.println(amount);
+		message = waitForResponse();
+		return Integer.parseInt(message);
 	}
 
-	public void transfer(String senderID, String targetID, int amount) {
-		String amountString = Integer.toString(amount);
-
-		return;
+	public int transfer(String senderID, String targetID, String amount) {
+		output.println("5");
+		String message = waitForResponse();
+		output.println(senderID);
+		message = waitForResponse();
+		output.println(targetID);
+		message = waitForResponse();
+		output.println(amount);
+		message = waitForResponse();
+		return Integer.parseInt(message);
 	}
 
-	public int changePin(String currentPin, String newPin) {
-
-		return 5;
+	public int changePin(String UID, String currentPin, String newPin) {
+		output.println("6");
+		String message = waitForResponse();
+		output.println(UID);
+		message = waitForResponse();
+		output.println(currentPin);
+		message = waitForResponse();
+		output.println(newPin);
+		message = waitForResponse();
+		return Integer.parseInt(message);
 	}
 
 	public void closeConnection() {
@@ -130,7 +155,7 @@ public class ServerCommunication {
 	}
 
 	public void addLog(String Customer, String Account, String page) {
-
+		output.println("7");
 	}
 
 	public boolean isConnected() {

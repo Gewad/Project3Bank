@@ -33,12 +33,20 @@ public class serverThread extends Thread {
 
 		while(true) {
 			String message = waitForInput();
-			System.out.println("Client: " + socket.getInetAddress() + " said " + message);
 			if(message.equals("1")){
 				this.checkUID();
-			}
-			else if(message.equals("2")) {
+			} else if(message.equals("2")) {
 				this.checkData();
+			} else if(message.equals("3")) {
+				this.getSaldo();
+			} else if(message.equals("4")) {
+				this.withdraw();
+			} else if(message.equals("5")) {
+				this.transfer();
+			} else if(message.equals("6")) {
+				this.changePin();
+			}  else if(message.equals("7")) {
+				this.addLog();
 			}
 			message = "";
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
@@ -74,6 +82,53 @@ public class serverThread extends Thread {
 				e1.printStackTrace();
 			}
 		}
+	}
+	
+	public void getSaldo() {
+		String account;
+		output.println("1");
+		account = waitForInput();
+		output.println(Integer.toString(SQL.getSaldo(account)));
+	}
+	
+	public void withdraw() {
+		String account;
+		String amount;
+		output.println("1");
+		account = waitForInput();
+		output.println("1");
+		amount = waitForInput();
+		output.println(Integer.toString(SQL.withdraw(account, Integer.parseInt(amount))));
+	}
+	
+	public void transfer() {
+		String target;
+		String sender;
+		String amount;
+		output.println("1");
+		sender = waitForInput();
+		output.println("1");
+		target = waitForInput();
+		output.println("1");
+		amount = waitForInput();
+		output.println(Integer.toString(SQL.transfer(sender, target, Integer.parseInt(amount))));
+	}
+	
+	public void changePin() {
+		String UID;
+		String oldPin;
+		String newPin;
+		output.println("1");
+		UID = waitForInput();
+		output.println("1");
+		oldPin = waitForInput();
+		output.println("1");
+		newPin = waitForInput();
+		output.println(Integer.toString(SQL.changePin(UID, oldPin, newPin)));
+	}
+	
+	public void addLog() {
+		
 	}
 	
 	public String waitForInput() {

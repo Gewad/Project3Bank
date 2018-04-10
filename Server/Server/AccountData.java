@@ -1,6 +1,7 @@
 package Server;
 import java.io.Serializable;
 public class AccountData implements Serializable{
+	private static final long serialVersionUID = 1183645979221194797L;
 	private boolean isValid;	// Zo weet de client of de pin is geaccepteerd
 	private String customer_id;	// Dan weet de client met wie hij bezig is
 	private String pas_id;		// Lekker handig ofzo
@@ -21,5 +22,29 @@ public class AccountData implements Serializable{
 	
 	public boolean getValid() {
 		return this.isValid;
+	}
+	
+	public String getCustomerID() {
+		return customer_id;
+	}
+	
+	public String getCardID() {
+		return pas_id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public String getSurname() {
+		return surName;
+	}
+	
+	public int getRekeningAmount() {
+		return rekeningAmount;
+	}
+	
+	public String getRekening(int i) {
+		return rekeningen[i];
 	}
 }
