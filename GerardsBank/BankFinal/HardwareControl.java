@@ -14,7 +14,7 @@ public class HardwareControl implements SerialPortEventListener {
 	SerialPort serialPort;
         /** The port we're normally going to use. */
 	private static final String PORT_NAMES[] = { 
-			"COM6", // Windows
+			"COM3", // Windows
 	};
 	/**
 	* A BufferedReader which will be fed by a InputStreamReader 
@@ -29,7 +29,7 @@ public class HardwareControl implements SerialPortEventListener {
 	/** Default bits per second for COM port. */
 	private static final int DATA_RATE = 9600;
 	
-	private String UID = "0";
+	private String arduinoInput = "";
 	
 	String uidLine;
 	String passLine;
@@ -95,19 +95,14 @@ public class HardwareControl implements SerialPortEventListener {
 	public synchronized void serialEvent(SerialPortEvent oEvent) {
 		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 			try {
-				String uidLine =input.readLine();
-				UID = uidLine;
+				String newInput =input.readLine();
+				arduinoInput = newInput;
+				
 			} catch (Exception e) {
 				//System.err.println(e.toString());
 			}
 		}
 		// Ignore all the other eventTypes, but you should consider the other ones.
-	}
-	
-	public void GetData(){
-		try{
-			output.write(1);
-		}catch(Exception e){}
 	}
 	
 	public HardwareControl() {
@@ -123,10 +118,10 @@ public class HardwareControl implements SerialPortEventListener {
 		System.out.println("Started");
 	}
 	
-	public String getUID(){
-		String sendUID = UID;
-		UID = "0";
-		System.out.println(sendUID);
-		return sendUID;
+	public String getInput() {
+		String tmp;
+		tmp = arduinoInput;
+		arduinoInput = "";
+		return tmp;
 	}
 }
