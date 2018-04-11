@@ -5,12 +5,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class serverMain {
-	serverMain server = new serverMain();
 	
 	public static void main(String [ ] args){
+		serverMain server = new serverMain();
 	}
 	
 	public serverMain() {
+		System.out.println("I'm doing something");
 		try {
 		ServerSocket test =  new ServerSocket(6789, 100);
 		System.out.println("Loading done, waiting for possible clients.");
