@@ -1,66 +1,203 @@
 package Server;
 
+import java.sql.*;
+
 public class SQLReader {
-	private String GerardsID = "69";
-	private int GerardsSaldo = 42069;
-	private String GerardsKaart = "kaartje";
-	private String GerardsPin = "6969";
+
+	private Statement st;
+	private Statement rt;
+	private Connection con;
 
 	public SQLReader() {
-		System.out.println("I act like a SQL reader but I am just a stub");
+
+		try {
+
+			Class.forName("com.mysql.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://gewadstudios.nl:3306/gewadstu_school", "gewadstu_bankser",
+					"ikbenbank!");
+			st = con.createStatement();
+			rt = con.createStatement();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
+	//@Override
 	public int checkUID(String UID) {
-		if (UID.equals(GerardsKaart)) {
-			return 0;
-		} else if (UID.equals("kaartje2")) {
-			return 2;
-		}
-		return 1;
-	}
 
-	public AccountData checkData(String UID, String pin) {
-		if (UID.equals(GerardsKaart) && pin.equals(GerardsPin)) {
-			return new AccountData(true, "1", "1", "Gerard", "van Walraven", 9, null);
-		}
-		return new AccountData(false, "", "", "", "", 2, null);
-	}
+		try {
 
-	public int getSaldo(String account) {
-		return GerardsSaldo;
-	}
+			String query = "SELECT Blocked FROM gewadstu_school.Card WHERE CardUID = '" + UID + "'";
+			ResultSet rs = st.executeQuery(query);
 
-	public int withdraw(String account, int amount) {
-		if (account.equals(GerardsID)) {
-			if (amount > 0) {
-				if (GerardsSaldo >= amount) {
-					GerardsSaldo -= amount;
-					return 0;
-				}
+			if (!rs.next()) {
+				return 1;
 			}
-		}
-		return 3;
-	}
 
-	public int transfer(String account, String target, int amount) {
-		if (account.equals(GerardsID)) {
-			if (amount > 0) {
-				if (GerardsSaldo >= amount) {
-					GerardsSaldo -= amount;
-					return 0;
-				}
+			if (rs.getInt("Blocked") == 0) {
+				return 0;
+			} else if (rs.getInt("Blocked") == 1) {
+				return 2;
 			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return 3;
+
+		return -1;
+
 	}
 
-	public int changePin(String UID, String oldPin, String newPin) {
-		if (UID.equals(GerardsKaart)) {
-			if (oldPin.equals(GerardsPin)) {
-				GerardsPin = newPin;
+	//@Override
+	public String checkPin(String UID, String hashedPin) {
+
+		try {
+
+			String query = "SELECT KlantID, Pin FROM gewadstu_school.Card WHERE CardUID = '" + UID + "'";
+			ResultSet rs = st.executeQuery(query);
+
+			if (!rs.next()) {
+				return "1000";
+			}
+
+			if (rs.getString("Pin").equals(hashedPin)) {
+				return rs.getString("KlantID");
+			}
+
+			return null;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return "-1";
+	}
+
+	//@Override
+	public int getSaldo(String rekeningID) {
+
+		try {
+
+			String query = "SELECT id, Amount FROM gewadstu_school.Account WHERE id = '" + rekeningID + "'";
+			ResultSet rs = st.executeQuery(query);
+
+			if (!rs.next()) {
+				return -1;
+			}
+
+			return rs.getInt("Amount");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return -1;
+	}
+
+	//@Override
+	public int withdraw(int rekeningID, int amount) {
+
+		try {
+
+			String query = "SELECT id, Amount FROM gewadstu_school.Account WHERE id = '" + rekeningID + "'";
+			ResultSet rs = st.executeQuery(query);
+
+			if (!rs.next()) {
+				return -1;
+			}
+
+			if (rs.getInt("Amount") >= amount) {
+
+				int newAmount = rs.getInt("Amount") - amount;
+
+				query = "UPDATE gewadstu_school.Account SET Amount = '" + newAmount + "' WHERE id = '" + rekeningID
+						+ "'";
+				st.executeUpdate(query);
+
 				return 0;
 			}
+
+			return 3;
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return 7;
+
+		return -1;
 	}
+
+	//@Override
+	public int transfer(int fromID, int targetID, int amount) {
+
+		try {
+
+			String fromQuery = "SELECT id, Amount FROM gewadstu_school.Account WHERE id = '" + fromID + "'";
+
+			ResultSet fromRs = st.executeQuery(fromQuery);
+
+			String targetQuery = "SELECT id, Amount FROM gewadstu_school.Account WHERE id = '" + targetID + "'";
+
+			ResultSet targetRs = rt.executeQuery(targetQuery);
+
+			if (!fromRs.next()) {
+				return -1;
+			}
+
+			if (!targetRs.next()) {
+				return 4;
+			}
+
+			if (fromRs.getInt("Amount") >= amount) {
+
+				int newFromAmount = fromRs.getInt("Amount") - amount;
+				int newTargetAmount = targetRs.getInt("Amount") + amount;
+
+				String query = "UPDATE gewadstu_school.Account SET Amount = CASE id WHEN '" + fromID + "' THEN '"
+						+ newFromAmount + "' WHEN '" + targetID + "' THEN '" + newTargetAmount
+						+ "' ELSE Amount END WHERE id IN('" + fromID + "', '" + targetID + "')";
+				st.executeUpdate(query);
+
+				return 0;
+
+			}
+
+			return 3;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return -1;
+	}
+
+	//@Override
+	public int changePin(String kaartUID, String oldHashedPin, String newHashedPin) {
+
+		try {
+
+			String query = "SELECT CardUID, Pin FROM gewadstu_school.Card WHERE CardUID = '" + kaartUID + "'";
+			ResultSet rs = st.executeQuery(query);
+			
+			if(!rs.next()) {
+				return 5;
+			}
+			
+			if(rs.getString("Pin") != oldHashedPin) {
+				return 7;
+			}
+
+			if (rs.getString("CardUID").equals(kaartUID)) {
+				query = "UPDATE gewadstu_school.Card SET Pin = '" + newHashedPin + "' WHERE CardUID = '" + kaartUID + "'";
+				st.executeUpdate(query);
+			}
+			return 0;
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return 9;
+	}
+
 }

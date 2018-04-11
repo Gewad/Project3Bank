@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 
 public class Background extends JFrame {
 
@@ -56,21 +57,30 @@ public class Background extends JFrame {
 	}
 	
 	public void showMessage(int x) {
-		Messenger message = new Messenger();
-		Messenger.showMessageDialog(this, selectMessage(x));
+		JOptionPane error = selectMessage(x);
+	    final JDialog errorDialog = error.createDialog("Information");
+	    errorDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+	    new Thread(new Runnable() {
+	      public void run() {
+	        try {Thread.sleep(3000);} catch (InterruptedException e) {}
+	        errorDialog.setVisible(false);
+	      }
+	    }).start();
+	    errorDialog.setVisible(true);
 	}
 	
-	public String selectMessage(int x) {
+	public JOptionPane selectMessage(int x) {
+		String Test = "2917";
 		switch(x) {
-		case 0: return "Handeling Succesvol Afgerond.";
-		case 1: return "Pas is nit herkend.";
-		case 2: return "Pas is geblokkeerd.";
-		case 3: return "Te weinig saldo op uw rekening.";
-		case 4: return "Rekening niet herkend.";
-		case 5: return "Ingevoerde pincode is ongeldig.";
-		case 6: return "";
-		case 7: return "Ingevoerde pincode is incorrect.";
-		default : return "";
+		case 0: return new JOptionPane("Handeling Succesvol Afgerond.", JOptionPane.INFORMATION_MESSAGE);
+		case 1: return new JOptionPane("Pas is niet herkend.", JOptionPane.WARNING_MESSAGE);
+		case 2: return new JOptionPane("Pas is geblokkeerd.", JOptionPane.WARNING_MESSAGE);
+		case 3: return new JOptionPane("Te weinig saldo op uw rekening.", JOptionPane.WARNING_MESSAGE);
+		case 4: return new JOptionPane("Rekening niet herkend.", JOptionPane.WARNING_MESSAGE);
+		case 5: return new JOptionPane("Ingevoerde pincode is ongeldig.", JOptionPane.WARNING_MESSAGE);
+		case 6: return new JOptionPane(Test.hashCode(), JOptionPane.WARNING_MESSAGE);
+		case 7: return new JOptionPane("Ingevoerde pincode is incorrect.", JOptionPane.WARNING_MESSAGE);
+		default : return new JOptionPane("Er is iets fout gegaan.", JOptionPane.WARNING_MESSAGE);
 		}
 		
 	}

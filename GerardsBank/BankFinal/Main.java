@@ -17,7 +17,7 @@ public class Main {
 				try {
 					Background background = new Background();
 					background.setVisible(true);
-					background.showMessage(0);
+					background.showMessage(6);
 					background.showMessage(4);
 				} catch (Exception e) {
 					e.printStackTrace();
