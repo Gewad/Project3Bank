@@ -28,7 +28,6 @@ public class ServerCommunication {
 			input = new BufferedReader(new InputStreamReader(server.getInputStream()));
 			output = new PrintStream(server.getOutputStream());
 			objectInput = new ObjectInputStream(server.getInputStream());
-			// objectOutput = new ObjectOutputStream(server.getOutputStream());
 		} catch (Exception e) {
 			connected = false;
 			return;
@@ -52,13 +51,16 @@ public class ServerCommunication {
 	}
 
 	private AccountData waitForObject() {
+		System.out.println("Waiting for object.");
 		AccountData ad = new AccountData(false, null, null, null, null, 1, null);
 		while (true) {
 			try {
 				ad = (AccountData) objectInput.readObject();
+				System.out.print("i");
 			} catch (Exception e) {
 			}
 			if (ad.getValid()) {
+				System.out.println("I received an object.");
 				return ad;
 			}
 		}
@@ -88,7 +90,6 @@ public class ServerCommunication {
 				output.println(pin);
 				message = waitForResponse();
 				if (message.equals("1")) {
-					System.out.println("Waiting for object.");
 					data = waitForObject();
 					System.out.println("AccountData received.");
 					return 0;
@@ -153,9 +154,17 @@ public class ServerCommunication {
 		}
 		System.out.println("Connection couldn't be closed.");
 	}
+	
+	public void clear() {
+		data = null;
+	}
 
 	public void addLog(String Customer, String Account, String page) {
 		output.println("7");
+	}
+	
+	public AccountData getAccountData() {
+		return data;
 	}
 
 	public boolean isConnected() {

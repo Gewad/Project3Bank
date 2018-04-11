@@ -14,6 +14,8 @@ public class serverThread extends Thread {
 	PrintStream output;
 	ObjectInputStream objectInput;
 	ObjectOutputStream objectOutput;
+	String attemptUID = "";
+	int attemptCount = 0;
 	private SQLReader SQL = new SQLReader();
 	
 	public serverThread(Socket inputSocket) {
@@ -70,9 +72,22 @@ public class serverThread extends Thread {
 		pin = waitForInput();
 		output.println("1");
 		try {
-			Thread.sleep(3000);
+			Thread.sleep(5000);
 			System.out.println("Sending object.");
-			objectOutput.writeObject(SQL.checkData(UID, pin));
+			AccountData out = SQL.checkData(UID, pin);
+			objectOutput.writeObject(out);
+			
+			if(!out.getValid()) {
+				if(attemptUID.equals(UID)) {
+					attemptCount += 1;
+					if(attemptCount == 3) {
+						SQL.blockCards(UID);
+					}
+				} else {
+					attemptUID = UID;
+					attemptCount = 0;
+				}
+			}
 		} catch (Exception e) {
 			System.out.println("Something went wrong with sending the object.");
 			try {

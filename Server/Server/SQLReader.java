@@ -51,7 +51,7 @@ public class SQLReader {
 	}
 
 	//@Override
-	public String checkPin(String UID, String hashedPin) {
+	public boolean checkPin(String UID, String hashedPin) {
 
 		try {
 
@@ -59,20 +59,52 @@ public class SQLReader {
 			ResultSet rs = st.executeQuery(query);
 
 			if (!rs.next()) {
-				return "1000";
+				return false;
 			}
 
 			if (rs.getString("Pin").equals(hashedPin)) {
-				return rs.getString("KlantID");
+				return true;
 			}
 
-			return null;
+			return false;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return "-1";
+		return false;
+	}
+	
+	public AccountData checkData(String UID, String pin) {
+		try {
+		boolean isValid = false;
+		isValid = checkPin(UID, pin);
+		if(!isValid) {
+			return new AccountData(false, "", "", "", "", 0, null);
+		}
+		
+		String query = "SELECT Customer.id, Customer.Name, Customer.surName FROM Customer WHERE Customer.id IN(SELECT klantID FROM Card WHERE CardUID = '"+UID+"' && pin = '"+pin+"')";
+		ResultSet customerRS = st.executeQuery(query);
+		String customerID = customerRS.getString("Customer.id");
+				
+		query = "SELECT COUNT(Account.id) as AccountCount FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
+		ResultSet rekeningAmount = st.executeQuery(query);
+		int rekeningAmt = rekeningAmount.getInt("AccountCount");
+		
+		query = "SELECT Account.id as Account FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
+		ResultSet rekening = st.executeQuery(query);
+		
+		String[] rekeningen = new String[rekeningAmt];
+		for(int i = 0; i > rekeningAmt; i++) {
+			rekeningen[i] = rekening.getString("Account");
+			rekening.next();
+		}
+		
+		AccountData out = new AccountData(isValid, customerRS.getString("Customer.id"), UID, customerRS.getString("Customer.Name"), customerRS.getString("Customer.surName"), 0, rekeningen);
+		return out;
+		} catch(Exception e) {
+			return new AccountData(false, "", "", "", "", 0, null);
+		}
 	}
 
 	//@Override
@@ -97,7 +129,7 @@ public class SQLReader {
 	}
 
 	//@Override
-	public int withdraw(int rekeningID, int amount) {
+	public int withdraw(String rekeningID, int amount) {
 
 		try {
 
@@ -129,7 +161,7 @@ public class SQLReader {
 	}
 
 	//@Override
-	public int transfer(int fromID, int targetID, int amount) {
+	public int transfer(String fromID, String targetID, int amount) {
 
 		try {
 
@@ -199,5 +231,12 @@ public class SQLReader {
 		}
 		return 9;
 	}
-
+	
+	public void blockCards(String UID) {
+		try {
+		String query = "UPDATE gewadstu_school.Card SET Blocked = '1' WHERE CardUID = '" + UID + "'";
+		st.executeUpdate(query);
+		} catch(SQLException e) {}
+		return;
+	}
 }
