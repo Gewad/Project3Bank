@@ -16,6 +16,9 @@ public class serverThread extends Thread {
 	ObjectOutputStream objectOutput;
 	String attemptUID = "";
 	int attemptCount = 0;
+
+	final int UNKNOWN_REQUEST = 100;
+	final int WRONG_NUM_ARGS = 101;
 	private SQLReader SQL = new SQLReader();
 
 	public serverThread(Socket inputSocket) {
@@ -32,128 +35,167 @@ public class serverThread extends Thread {
 	}
 
 	public void run() {
-		String message;
+		String request;
 		while (true) {
-			message = waitForInput();
-			if (message.equals("1")) {
-				this.checkUID();
-			} else if (message.equals("2")) {
-				this.checkData();
-			} else if (message.equals("3")) {
-				this.getSaldo();
-			} else if (message.equals("4")) {
-				this.withdraw();
-			} else if (message.equals("5")) {
-				this.transfer();
-			} else if (message.equals("6")) {
-				this.changePin();
-			} else if (message.equals("7")) {
-				this.addLog();
-			} else if (message.equals("9")) {
-				sendToClient("");
+			// Receive request string
+			request = waitForInput();
+
+			// Operation
+			String[] parts = request.split(" ");
+			String operation = parts[0];
+
+			String response;
+
+			System.out.println("Client request: "+request);
+
+			switch(operation) {
+				case "CHECK_UID": 
+				response = checkUID(parts);
+				break;
+
+				case "CHECK_DATA":
+				response = checkData(parts);
+				break;
+
+				case "GET_SALDO":
+				response = getSaldo(parts);
+				break;
+
+				case "WITHDRAW":
+				response = withdraw(parts);
+				break;
+
+				case "TRANSFER":
+				response = transfer(parts);
+				break;
+
+				case "CHANGE_PIN":
+				response = changePin(parts);
+				break;
+
+				default:
+				response = makeErrorResponse(UNKNOWN_REQUEST);
+				break;
 			}
-			message = "";
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
+
+			sendToClient(response);
 		}
 	}
 
-	public void checkUID() {
-		System.out.println("Client requested UIDCheck");
-		sendToClient("1");
-		String message = waitForInput();
-		sendToClient(Integer.toString(SQL.checkUID(message)));
-		System.out.println("I returned: ");
-	}
-
-	public void checkData() {
-		String UID;
-		String pin;
-		sendToClient("1");
-		UID = waitForInput();
-		sendToClient("1");
-		pin = waitForInput();
-		sendToClient("1");
+	/** CHECK_UID uid */
+	public String checkUID(String[] arguments) {
 		
-		String message;
-		
-		AccountData out = SQL.checkData(UID, pin);
-		String[] data = out.toStringarray();
-		String[] rekeningen = out.getRekeningen();
-		try{Thread.sleep(1000);}catch(Exception e) {}
-		for(int i = 0; i < 6; i++) {
-			sendToClient(data[i]);
-			message = waitForInput();
-			if(!message.equals("1")) { return; }
-		}
-		for(int i = 0; i < Integer.parseInt(data[5]); i++) {
-			sendToClient(rekeningen[i]);
-			message = waitForInput();
-			if(!message.equals("1")) { return; }
+		if(arguments.length != 2){
+			return makeErrorResponse(WRONG_NUM_ARGS);
 		}
 
-		System.out.println("Checking input");
-		if (!(out.getValid() == 1)) {
-			if (attemptUID.equals(UID)) {
-				System.out.println("Input was invalid");
-				attemptCount += 1;
-				if (attemptCount == 3) {
-					SQL.blockCards(UID);
-				}
-			} else {
-				attemptUID = UID;
-				attemptCount = 0;
-			}
+		int result = SQL.checkUID(arguments[1]);
+
+		if(result == 0) {
+			return "OK 0";
+		} else {
+			return makeErrorResponse(result);
 		}
 	}
 
-	public void getSaldo() {
-		String account;
-		sendToClient("1");
-		account = waitForInput();
-		sendToClient(Integer.toString(SQL.getSaldo(account)));
+	/** CHECK_DATA uid pin */
+	public String checkData(String[] arguments) {
+
+		if(arguments.length != 3){
+			return makeErrorResponse(WRONG_NUM_ARGS);
+		}
+
+		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return makeErrorResponse(SQLReader.INCORRECT_PIN);
+		}
+
+		AccountData ad = SQL.getData(arguments[1]);
+
+		if(ad == null) {
+			return makeErrorResponse(-10);
+		} else {
+			return "OK 0 " + ad.toString();
+		}
 	}
 
-	public void withdraw() {
-		String account;
-		String amount;
-		sendToClient("1");
-		account = waitForInput();
-		sendToClient("1");
-		amount = waitForInput();
-		sendToClient(Integer.toString(SQL.withdraw(account, Integer.parseInt(amount))));
+	/** GET_SALDO uid pin */
+	public String getSaldo(String[] arguments) {
+
+		if(arguments.length != 3){
+			return makeErrorResponse(WRONG_NUM_ARGS);
+		}
+
+		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return makeErrorResponse(SQL.INCORRECT_PIN);
+		}
+
+		int result = SQL.getSaldo(arguments[1]);
+
+		if(result >= 0) {
+			return "OK " + result; // FIXME hacky
+		} else {
+			return makeErrorResponse(result);
+		}
 	}
 
-	public void transfer() {
-		String target;
-		String sender;
-		String amount;
-		sendToClient("1");
-		sender = waitForInput();
-		sendToClient("1");
-		target = waitForInput();
-		sendToClient("1");
-		amount = waitForInput();
-		sendToClient(Integer.toString(SQL.transfer(sender, target, Integer.parseInt(amount))));
+	/** WITHDRAW uid pin amount */
+	public String withdraw(String[] arguments) {
+
+		if(arguments.length != 4){
+			return makeErrorResponse(WRONG_NUM_ARGS);
+		}
+
+		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return "ERROR pin incorrect";
+		}
+
+		int result = SQL.withdraw(arguments[1], Integer.parseInt(arguments[3]));
+
+		if(result == SQL.OK) {
+			return "OK 0";
+		} else {
+			return makeErrorResponse(result);
+		}
 	}
 
-	public void changePin() {
-		String UID;
-		String oldPin;
-		String newPin;
-		sendToClient("1");
-		UID = waitForInput();
-		sendToClient("1");
-		oldPin = waitForInput();
-		sendToClient("1");
-		newPin = waitForInput();
-		sendToClient(Integer.toString(SQL.changePin(UID, oldPin, newPin)));
+	/** TRANSFER uid pin target_uid amount */
+	public String transfer(String[] arguments) {
+
+		if(arguments.length != 5){
+			return makeErrorResponse(WRONG_NUM_ARGS);
+		}
+
+		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return makeErrorResponse(SQL.INCORRECT_PIN);
+		}
+
+		int result = SQL.transfer(arguments[1], arguments[3], Integer.parseInt(arguments[4]));
+
+		if(result == SQL.OK) {
+			return "OK 0";
+		} else {
+			return makeErrorResponse(result);
+		}
 	}
 
-	public void addLog() {
+	/** CHANGE_PIN uid pin pin2 */
+	public String changePin(String[] arguments) {
 
+		if(arguments.length != 4){
+			return makeErrorResponse(WRONG_NUM_ARGS);
+		}
+
+		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return "ERROR pin incorrect";
+		}
+
+		int result = SQL.changePin(arguments[1], arguments[3]);
+
+		if(result == SQL.OK) {
+			return "OK 0";
+		} else {
+			return makeErrorResponse(result);
+		}
 	}
 
 	public String waitForInput() {
@@ -163,19 +205,33 @@ public class serverThread extends Thread {
 			try {
 				message = input.readLine();
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			if (!message.equals("")) {
-				message = message.substring(8);
 				System.out.println("Client: " + socket.getInetAddress() + " said: " + message);
-				break;
+				return message;
 			}
 		}
-		return message;
 	}
 	
 	private void sendToClient(String message) {
-		try {Thread.sleep(100);} catch(Exception e) {}
-		System.out.println("Sending message: " +message+ ", to client.");
-		output.println("MESSAGE:"+message);
+		System.out.println("Sending message to client: " +message);
+		output.println(message);
 	}
+ 
+	private String makeErrorResponse(int errorCode) {
+		switch(errorCode) {
+			case WRONG_NUM_ARGS: return "ERROR " + errorCode + " wrong number of args";
+			case UNKNOWN_REQUEST: return "ERROR " + errorCode + " unknown request";
+			case SQLReader.SERVER_ERROR: return "ERROR "+errorCode+" server error";
+			case SQLReader.UNKNOWN_CARD: return "ERROR "+errorCode+" unknown card";
+			case SQLReader.BLOCKED: return "ERROR "+errorCode+" card blocked";
+			case SQLReader.LOW_BALANCE: return "ERROR "+errorCode+" low balance";
+			case SQLReader.UNKNOWN_ACCOUNT: return "ERROR "+errorCode+" unknown account";
+			case SQLReader.INVALID_PIN: return "ERROR "+errorCode+" invalid pin";
+			case SQLReader.INCORRECT_PIN: return "ERROR "+errorCode+" incorrect pin";
+			default: return "ERROR 0 unknown error";
+		}
+	}
+
 }
