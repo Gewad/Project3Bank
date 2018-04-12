@@ -55,14 +55,15 @@ public class SQLReader {
 
 		try {
 
-			String query = "SELECT KlantID, Pin FROM gewadstu_school.Card WHERE CardUID = '" + UID + "'";
+			String query = "SELECT Pin FROM gewadstu_school.Card WHERE CardUID = '" + UID + "'";
 			ResultSet rs = st.executeQuery(query);
 
 			if (!rs.next()) {
 				return 0;
 			}
-
-			if (rs.getString("Pin").equals(hashedPin)) {
+			
+			String testBoi = rs.getString("Pin");
+			if (hashedPin.equals(testBoi)) {
 				return 1;
 			}
 
@@ -77,33 +78,42 @@ public class SQLReader {
 	
 	public AccountData checkData(String UID, String pin) {
 		try {
-			int isValid = 0;
-			isValid = checkPin(UID, pin);
-			if(isValid != 1) {
-				return new AccountData(0, "", "", "", "", 0, null);
+			int isValid = 1;
+			if(checkPin(UID, pin) != 1) {
+				String[] fakeArray = createFakeArray(1);
+				return new AccountData(0, "falseCustomer", "falseCard", "falseName", "falseSurName", 1, fakeArray);
 			}
 			
-			String query = "SELECT Customer.id, Customer.Name, Customer.surName FROM Customer WHERE Customer.id IN(SELECT klantID FROM Card WHERE CardUID = '"+UID+"' && pin = '"+pin+"')";
-			ResultSet customerRS = st.executeQuery(query);
-			String customerID = customerRS.getString("Customer.id");
+			Statement customerST = con.createStatement();
+			
+			String query = "SELECT Customer.id as id, Customer.Name as Name, Customer.surName as surName FROM Customer WHERE Customer.id IN(SELECT klantID FROM Card WHERE CardUID = '"+UID+"' && pin = '"+pin+"')";
+			ResultSet customerRS = customerST.executeQuery(query);
+			String customerID = customerRS.getString("id");
+			
+			Statement amountST = con.createStatement();
 					
 			query = "SELECT COUNT(Account.id) as AccountCount FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
-			ResultSet rekeningAmount = st.executeQuery(query);
+			ResultSet rekeningAmount = amountST.executeQuery(query);
 			int rekeningAmt = rekeningAmount.getInt("AccountCount");
 			
-			query = "SELECT Account.id as Account FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
-			ResultSet rekening = st.executeQuery(query);
+			Statement accountST = con.createStatement();
 			
+			query = "SELECT Account.id as Account FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
+			ResultSet rekening = accountST.executeQuery(query);
+						
 			String[] rekeningen = new String[rekeningAmt];
 			for(int i = 0; i > rekeningAmt; i++) {
 				rekeningen[i] = rekening.getString("Account");
 				rekening.next();
 			}
 			
-			AccountData out = new AccountData(isValid, customerRS.getString("Customer.id"), UID, customerRS.getString("Customer.Name"), customerRS.getString("Customer.surName"), 0, rekeningen);
+			AccountData out = new AccountData(isValid, customerID, UID, customerRS.getString("Name"), customerRS.getString("surName"), 0, rekeningen);
 			return out;
+			
 		} catch(Exception e) {
-			return new AccountData(0, "", "", "", "", 0, null);
+			System.out.println("Something went wrong af.");
+			String[] fakeArray = createFakeArray(1);
+			return new AccountData(0, "falseCustomer", "falseCard", "falseName", "falseSurName", 1, fakeArray);
 		}
 	}
 
@@ -238,5 +248,13 @@ public class SQLReader {
 		st.executeUpdate(query);
 		} catch(SQLException e) {}
 		return;
+	}
+	
+	private String[] createFakeArray(int x) {
+		String[] returnArray = new String[x];
+		for(int i = 0; i < x; i++) {
+			returnArray[i] = "falseAccount";
+		}
+		return returnArray;
 	}
 }

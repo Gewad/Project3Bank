@@ -32,9 +32,9 @@ public class serverThread extends Thread {
 	}
 
 	public void run() {
-
+		String message;
 		while (true) {
-			String message = waitForInput();
+			message = waitForInput();
 			if (message.equals("1")) {
 				this.checkUID();
 			} else if (message.equals("2")) {
@@ -49,6 +49,8 @@ public class serverThread extends Thread {
 				this.changePin();
 			} else if (message.equals("7")) {
 				this.addLog();
+			} else if (message.equals("9")) {
+				sendToClient("");
 			}
 			message = "";
 			try {
@@ -60,20 +62,20 @@ public class serverThread extends Thread {
 
 	public void checkUID() {
 		System.out.println("Client requested UIDCheck");
-		output.println("1");
+		sendToClient("1");
 		String message = waitForInput();
-		output.println(Integer.toString(SQL.checkUID(message)));
+		sendToClient(Integer.toString(SQL.checkUID(message)));
 		System.out.println("I returned: ");
 	}
 
 	public void checkData() {
 		String UID;
 		String pin;
-		output.println("1");
+		sendToClient("1");
 		UID = waitForInput();
-		output.println("1");
+		sendToClient("1");
 		pin = waitForInput();
-		output.println("1");
+		sendToClient("1");
 		
 		String message;
 		
@@ -82,12 +84,12 @@ public class serverThread extends Thread {
 		String[] rekeningen = out.getRekeningen();
 		try{Thread.sleep(1000);}catch(Exception e) {}
 		for(int i = 0; i < 6; i++) {
-			output.println(data[i]);
+			sendToClient(data[i]);
 			message = waitForInput();
 			if(!message.equals("1")) { return; }
 		}
 		for(int i = 0; i < Integer.parseInt(data[5]); i++) {
-			output.println(rekeningen[i]);
+			sendToClient(rekeningen[i]);
 			message = waitForInput();
 			if(!message.equals("1")) { return; }
 		}
@@ -109,45 +111,45 @@ public class serverThread extends Thread {
 
 	public void getSaldo() {
 		String account;
-		output.println("1");
+		sendToClient("1");
 		account = waitForInput();
-		output.println(Integer.toString(SQL.getSaldo(account)));
+		sendToClient(Integer.toString(SQL.getSaldo(account)));
 	}
 
 	public void withdraw() {
 		String account;
 		String amount;
-		output.println("1");
+		sendToClient("1");
 		account = waitForInput();
-		output.println("1");
+		sendToClient("1");
 		amount = waitForInput();
-		output.println(Integer.toString(SQL.withdraw(account, Integer.parseInt(amount))));
+		sendToClient(Integer.toString(SQL.withdraw(account, Integer.parseInt(amount))));
 	}
 
 	public void transfer() {
 		String target;
 		String sender;
 		String amount;
-		output.println("1");
+		sendToClient("1");
 		sender = waitForInput();
-		output.println("1");
+		sendToClient("1");
 		target = waitForInput();
-		output.println("1");
+		sendToClient("1");
 		amount = waitForInput();
-		output.println(Integer.toString(SQL.transfer(sender, target, Integer.parseInt(amount))));
+		sendToClient(Integer.toString(SQL.transfer(sender, target, Integer.parseInt(amount))));
 	}
 
 	public void changePin() {
 		String UID;
 		String oldPin;
 		String newPin;
-		output.println("1");
+		sendToClient("1");
 		UID = waitForInput();
-		output.println("1");
+		sendToClient("1");
 		oldPin = waitForInput();
-		output.println("1");
+		sendToClient("1");
 		newPin = waitForInput();
-		output.println(Integer.toString(SQL.changePin(UID, oldPin, newPin)));
+		sendToClient(Integer.toString(SQL.changePin(UID, oldPin, newPin)));
 	}
 
 	public void addLog() {
@@ -155,17 +157,25 @@ public class serverThread extends Thread {
 	}
 
 	public String waitForInput() {
-		String mes = "";
+		System.out.println("Waiting for input.");
+		String message = "";
 		while (true) {
 			try {
-				mes = input.readLine();
+				message = input.readLine();
 			} catch (Exception e) {
 			}
-			if (!mes.equals("")) {
-				System.out.println("Client: " + socket.getInetAddress() + " said: " + mes);
+			if (!message.equals("")) {
+				message = message.substring(8);
+				System.out.println("Client: " + socket.getInetAddress() + " said: " + message);
 				break;
 			}
 		}
-		return mes;
+		return message;
+	}
+	
+	private void sendToClient(String message) {
+		try {Thread.sleep(100);} catch(Exception e) {}
+		System.out.println("Sending message: " +message+ ", to client.");
+		output.println("MESSAGE:"+message);
 	}
 }

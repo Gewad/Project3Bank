@@ -117,6 +117,8 @@ public class testMain {
 						server.closeConnection();
 						sc.close();
 						break;
+					} else if(input.equals("test")) {
+						server.quickTest();
 					}
 				}
 			}

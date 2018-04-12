@@ -37,26 +37,34 @@ public class ServerCommunication {
 	}
 
 	public String waitForResponse() {
-		String mes = "";
+		System.out.println("Waiting for input.");
+		String message = "";
 		while (true) {
 			try {
-				mes = input.readLine();
+				message = input.readLine();
 			} catch (Exception e) {
-				e.getMessage();
 			}
-			if (!mes.equals("")) {
-				System.out.println("I received message: " + mes);
-				return mes;
+			if (!message.equals("")) {
+				message = message.substring(8);
+				System.out.println("Client: " + server.getInetAddress() + " said: " + message);
+				break;
 			}
 		}
+		return message;
+	}
+	
+	private void sendToServer(String message) {
+		try {Thread.sleep(100);} catch(Exception e) {}
+		System.out.println("Sending message: " +message+ ", to Server.");
+		output.println("MESSAGE:"+message);
 	}
 
 	public int checkUID(String UID) {
-		output.println("1");
+		sendToServer("1");
 		System.out.println("I requested a check on the current card from server: " + server.getInetAddress());
 		String message = waitForResponse();
 		if (message.equals("1")) {
-			output.println(UID);
+			sendToServer(UID);
 			message = waitForResponse();
 			int messageInt = Integer.parseInt(message);
 			return messageInt;
@@ -65,7 +73,7 @@ public class ServerCommunication {
 	}
 
 	public int checkData(String UID, String pin) {
-		output.println("2");
+		sendToServer("2");
 		System.out.println("I requested the AccountData from server: " + server.getInetAddress());
 		String message = waitForResponse();
 		
@@ -73,14 +81,14 @@ public class ServerCommunication {
 			return 9;
 		}
 	
-		output.println(UID);
+		sendToServer(UID);
 		message = waitForResponse();
 
 		if (!message.equals("1")) {
 			return 9;
 		}
 		
-		output.println(pin);
+		sendToServer(pin);
 		message = waitForResponse();
 
 		if (!message.equals("1")) {
@@ -92,19 +100,19 @@ public class ServerCommunication {
 		for(int i = 0; i < 6; i++) {
 			message = waitForResponse();
 			accountData[i] = message;
-			output.println("1");
+			sendToServer("1");
 		}
 		
-		int tmp = Integer.parseInt(accountData[5]);
-		String[] reke = new String[tmp];
+		int rekeningAmount = Integer.parseInt(accountData[5]);
+		String[] rekeningen = new String[rekeningAmount];
 		
 		for(int i = 0; i < Integer.parseInt(accountData[5]); i++) {
 			message = waitForResponse();
-			reke[i] = message;
-			output.println("1");
+			rekeningen[i] = message;
+			sendToServer("1");
 		}
 		
-		data = new AccountData(accountData, reke);
+		data = new AccountData(accountData, rekeningen);
 		
 		if(data.getValid() == 1) {
 			return 0;
@@ -114,47 +122,53 @@ public class ServerCommunication {
 	}
 
 	public int getSaldo(String rekeningID) {
-		output.println("3");
+		sendToServer("3");
 		String message = waitForResponse();
 		if(message.equals("1")) {
-			output.println(rekeningID);
+			sendToServer(rekeningID);
 			message = waitForResponse();
 			int messageInt = Integer.parseInt(message);
 			return messageInt;
 		}
 		return 0;
 	}
+	
+	public void quickTest() {
+		sendToServer("9");
+		waitForResponse();
+		return;
+	}
 
 	public int withdraw(String rekeningID, String amount) {
-		output.println("4");
+		sendToServer("4");
 		String message = waitForResponse();
-		output.println(rekeningID);
+		sendToServer(rekeningID);
 		message = waitForResponse();
-		output.println(amount);
+		sendToServer(amount);
 		message = waitForResponse();
 		return Integer.parseInt(message);
 	}
 
 	public int transfer(String senderID, String targetID, String amount) {
-		output.println("5");
+		sendToServer("5");
 		String message = waitForResponse();
-		output.println(senderID);
+		sendToServer(senderID);
 		message = waitForResponse();
-		output.println(targetID);
+		sendToServer(targetID);
 		message = waitForResponse();
-		output.println(amount);
+		sendToServer(amount);
 		message = waitForResponse();
 		return Integer.parseInt(message);
 	}
 
 	public int changePin(String UID, String currentPin, String newPin) {
-		output.println("6");
+		sendToServer("6");
 		String message = waitForResponse();
-		output.println(UID);
+		sendToServer(UID);
 		message = waitForResponse();
-		output.println(currentPin);
+		sendToServer(currentPin);
 		message = waitForResponse();
-		output.println(newPin);
+		sendToServer(newPin);
 		message = waitForResponse();
 		return Integer.parseInt(message);
 	}
@@ -174,7 +188,7 @@ public class ServerCommunication {
 	}
 
 	public void addLog(String Customer, String Account, String page) {
-		output.println("7");
+		sendToServer("7");
 	}
 	
 	public AccountData getAccountData() {
