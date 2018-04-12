@@ -11,7 +11,6 @@ public class serverMain {
 	}
 	
 	public serverMain() {
-		System.out.println("I'm doing something");
 		try {
 		ServerSocket test =  new ServerSocket(6789, 100);
 		System.out.println("Loading done, waiting for possible clients.");

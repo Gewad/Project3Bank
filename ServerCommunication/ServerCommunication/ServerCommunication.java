@@ -7,7 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
-import Server.AccountData;
+import ServerCommunication.AccountData;
 
 public class ServerCommunication {
 
@@ -42,26 +42,11 @@ public class ServerCommunication {
 			try {
 				mes = input.readLine();
 			} catch (Exception e) {
+				e.getMessage();
 			}
 			if (!mes.equals("")) {
 				System.out.println("I received message: " + mes);
 				return mes;
-			}
-		}
-	}
-
-	private AccountData waitForObject() {
-		System.out.println("Waiting for object.");
-		AccountData ad = new AccountData(false, null, null, null, null, 1, null);
-		while (true) {
-			try {
-				ad = (AccountData) objectInput.readObject();
-				System.out.print("i");
-			} catch (Exception e) {
-			}
-			if (ad.getValid()) {
-				System.out.println("I received an object.");
-				return ad;
 			}
 		}
 	}
@@ -83,19 +68,48 @@ public class ServerCommunication {
 		output.println("2");
 		System.out.println("I requested the AccountData from server: " + server.getInetAddress());
 		String message = waitForResponse();
-		if (message.equals("1")) {
-			output.println(UID);
-			message = waitForResponse();
-			if (message.equals("1")) {
-				output.println(pin);
-				message = waitForResponse();
-				if (message.equals("1")) {
-					data = waitForObject();
-					System.out.println("AccountData received.");
-					return 0;
-				}
-			}
+		
+		if (!message.equals("1")) {
+			return 9;
 		}
+	
+		output.println(UID);
+		message = waitForResponse();
+
+		if (!message.equals("1")) {
+			return 9;
+		}
+		
+		output.println(pin);
+		message = waitForResponse();
+
+		if (!message.equals("1")) {
+			return 9;
+		}
+		
+		String[] accountData = new String[6];
+		
+		for(int i = 0; i < 6; i++) {
+			message = waitForResponse();
+			accountData[i] = message;
+			output.println("1");
+		}
+		
+		int tmp = Integer.parseInt(accountData[5]);
+		String[] reke = new String[tmp];
+		
+		for(int i = 0; i < Integer.parseInt(accountData[5]); i++) {
+			message = waitForResponse();
+			reke[i] = message;
+			output.println("1");
+		}
+		
+		data = new AccountData(accountData, reke);
+		
+		if(data.getValid() == 1) {
+			return 0;
+		}
+		
 		return 7;
 	}
 

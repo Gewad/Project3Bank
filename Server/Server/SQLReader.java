@@ -51,7 +51,7 @@ public class SQLReader {
 	}
 
 	//@Override
-	public boolean checkPin(String UID, String hashedPin) {
+	public int checkPin(String UID, String hashedPin) {
 
 		try {
 
@@ -59,51 +59,51 @@ public class SQLReader {
 			ResultSet rs = st.executeQuery(query);
 
 			if (!rs.next()) {
-				return false;
+				return 0;
 			}
 
 			if (rs.getString("Pin").equals(hashedPin)) {
-				return true;
+				return 1;
 			}
 
-			return false;
+			return 0;
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return false;
+		return 0;
 	}
 	
 	public AccountData checkData(String UID, String pin) {
 		try {
-		boolean isValid = false;
-		isValid = checkPin(UID, pin);
-		if(!isValid) {
-			return new AccountData(false, "", "", "", "", 0, null);
-		}
-		
-		String query = "SELECT Customer.id, Customer.Name, Customer.surName FROM Customer WHERE Customer.id IN(SELECT klantID FROM Card WHERE CardUID = '"+UID+"' && pin = '"+pin+"')";
-		ResultSet customerRS = st.executeQuery(query);
-		String customerID = customerRS.getString("Customer.id");
-				
-		query = "SELECT COUNT(Account.id) as AccountCount FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
-		ResultSet rekeningAmount = st.executeQuery(query);
-		int rekeningAmt = rekeningAmount.getInt("AccountCount");
-		
-		query = "SELECT Account.id as Account FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
-		ResultSet rekening = st.executeQuery(query);
-		
-		String[] rekeningen = new String[rekeningAmt];
-		for(int i = 0; i > rekeningAmt; i++) {
-			rekeningen[i] = rekening.getString("Account");
-			rekening.next();
-		}
-		
-		AccountData out = new AccountData(isValid, customerRS.getString("Customer.id"), UID, customerRS.getString("Customer.Name"), customerRS.getString("Customer.surName"), 0, rekeningen);
-		return out;
+			int isValid = 0;
+			isValid = checkPin(UID, pin);
+			if(isValid != 1) {
+				return new AccountData(0, "", "", "", "", 0, null);
+			}
+			
+			String query = "SELECT Customer.id, Customer.Name, Customer.surName FROM Customer WHERE Customer.id IN(SELECT klantID FROM Card WHERE CardUID = '"+UID+"' && pin = '"+pin+"')";
+			ResultSet customerRS = st.executeQuery(query);
+			String customerID = customerRS.getString("Customer.id");
+					
+			query = "SELECT COUNT(Account.id) as AccountCount FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
+			ResultSet rekeningAmount = st.executeQuery(query);
+			int rekeningAmt = rekeningAmount.getInt("AccountCount");
+			
+			query = "SELECT Account.id as Account FROM Account WHERE Account.id IN(SELECT CustomerAccount.AccountID FROM CustomerAccount WHERE CustomerAccount.CustomerID = '"+customerID+"')";
+			ResultSet rekening = st.executeQuery(query);
+			
+			String[] rekeningen = new String[rekeningAmt];
+			for(int i = 0; i > rekeningAmt; i++) {
+				rekeningen[i] = rekening.getString("Account");
+				rekening.next();
+			}
+			
+			AccountData out = new AccountData(isValid, customerRS.getString("Customer.id"), UID, customerRS.getString("Customer.Name"), customerRS.getString("Customer.surName"), 0, rekeningen);
+			return out;
 		} catch(Exception e) {
-			return new AccountData(false, "", "", "", "", 0, null);
+			return new AccountData(0, "", "", "", "", 0, null);
 		}
 	}
 
