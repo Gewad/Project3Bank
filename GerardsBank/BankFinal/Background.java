@@ -9,14 +9,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-
 import javax.swing.JButton;
 import javax.swing.JDialog;
 
+import BankPanels.login1;
+
 public class Background extends JFrame {
 
+	private JPanel panel = new login1();
 	private JPanel contentPane;
-	private JPanel panel;
 
 	/**
 	 * Launch the application.
@@ -32,28 +33,19 @@ public class Background extends JFrame {
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(new JLabel(new ImageIcon("D:\\Data\\GitWorkspace\\School\\Project3Bank\\GerardsBank\\External\\test3.png")));
-		contentPane.setLayout(null);
-		
-		
-		panel = new JPanel();
-		panel.setBounds(150, 150, 1620, 930);
-		contentPane.add(panel);
-		
-		panel.setVisible(true);
+		this.getContentPane().setLayout(null);
+		this.getContentPane().add(panel);
 	}
 	
 	public void setPanel(JPanel x) {
 		this.setPanelVisible(false);
 		this.panel = x;
+		this.getContentPane().add(panel);
 		this.setPanelVisible(true);
 	}
 	
 	public void setPanelVisible(boolean x) {
-		if(x) {
-			this.panel.setVisible(true);
-		} else {
-			this.panel.setVisible(false);
-		}
+		this.panel.setVisible(x);
 	}
 	
 	public void showMessage(int x) {

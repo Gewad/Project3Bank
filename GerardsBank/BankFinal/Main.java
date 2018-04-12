@@ -2,23 +2,27 @@ package BankFinal;
 
 import java.awt.EventQueue;
 
+import BankPanels.*;
 import ServerCommunication.ServerCommunication;
 
 public class Main {
 	private static boolean gotAccount = false;
 	private final static String ATM = "BG100001";
 	private int currentScreen = 0;
+	Background background;
 	
 	public static void main(String[] args) {
-		ServerCommunication server = new ServerCommunication("localhost", 6789, ATM);
+		Main machine = new Main();
+	}
+	
+	public Main() {
+		final ServerCommunication server = new ServerCommunication("localhost", 6789, ATM);
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Background background = new Background();
+					background = new Background();
 					background.setVisible(true);
-					background.showMessage(6);
-					background.showMessage(4);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -27,10 +31,27 @@ public class Main {
 		
 		Thread arduinoListener = new Thread() {
 			public void run() {
+				HardwareControl arduino = new HardwareControl();
 				
+				while(true) {
+					String input = arduino.getInput();
+					if(!input.equals("")) {
+						if((input.contains("UID:")) && currentScreen == 0) {
+							input = input.substring(input.indexOf(":")+1);
+							
+							int serverResponse = server.checkUID(input);
+							if(serverResponse != 0) {
+								background.showMessage(serverResponse);
+							}
+							changeScreen(1);
+						}
+					}
+				}
 			}
 		};
 		arduinoListener.start();
+		
+		try {Thread.sleep(1000);}catch(Exception e) {}
 	}
 	
 	public void arduinoListener() {
@@ -42,13 +63,13 @@ public class Main {
 		System.out.println("Screen changed to: " + t);
 		switch(t){
 			case 0:
-				//login 1: UID
+				this.background.setPanel(new login1());
 				break;
 			case 1:
-				//login 2: Pin
+				this.background.setPanel(new login2());
 				break;
 			case 2:
-				//home menu keuze knoppen
+				this.background.setPanel(new homeMenu());
 				break;
 			case 3:
 				//geld opnemen
