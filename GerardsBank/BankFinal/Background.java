@@ -48,6 +48,10 @@ public class Background extends JFrame {
 		this.panel.setVisible(x);
 	}
 	
+	public JPanel getPanel() {
+		return panel;
+	}
+	
 	public void showMessage(int x) {
 		JOptionPane error = selectMessage(x);
 	    final JDialog errorDialog = error.createDialog("Information");

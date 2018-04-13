@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 
 public class homeMenu extends JPanel {
 
-	public homeMenu() {
+	public homeMenu(String nameCombined) {
 		this.setBounds(150, 150, 1620, 930);
 		this.setBackground(Color.WHITE);
 		setLayout(null);
@@ -30,7 +30,7 @@ public class homeMenu extends JPanel {
 		txtMid.setBounds(500, 250, 620, 179);
 		txtMid.setFont(new Font("Tahoma", Font.PLAIN, 30));
 		txtMid.setBackground(new Color(1.0f,1.0f,1.0f,0.0f));
-		txtMid.setText("Houdt uw kaart tegen de kaartlezer.");
+		txtMid.setText("Welkom." + nameCombined);
 		txtMid.setEditable(false);
 		this.add(txtMid);
 		txtMid.setVisible(true);
