@@ -7,7 +7,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
-import ServerCommunication.AccountData;
 
 public class ServerCommunication {
 
@@ -57,14 +56,14 @@ public class ServerCommunication {
 				e.printStackTrace();
 			}
 			if (!message.equals("")) {
-				System.out.println("Client: " + server.getInetAddress() + " said: " + message);
+				System.out.println("Server said: " + message);
 				return message;
 			}
 		}
 	}
-	
+
 	private void sendToServer(String message) {
-		System.out.println("Sending message to server: " +message);
+		System.out.println("Sending message to server: " + message);
 		output.println(message);
 	}
 
@@ -76,32 +75,47 @@ public class ServerCommunication {
 		return getStatusFromResponse(response);
 	}
 
-	public int checkData(String UID, String pin) {
-		sendToServer("CHECK_DATA " + UID + " " + pin);
+	public int checkPin(String UID, String pin) {
+		sendToServer("CHECK_PIN " + UID + " " + pin);
 
 		String response = waitForResponse();
 
 		return getStatusFromResponse(response);
 	}
 
-	public int getSaldo(String rekeningID, String pin) {
-		sendToServer("GET_SALDO " + rekeningID + " " + pin);
+	public AccountData getData(String UID, String pin) {
+		sendToServer("GET_DATA " + UID + " " + pin);
+
+		String response = waitForResponse();
+
+		String[] parts = response.split(" ", 3);
+
+		if (parts[0].equals("ERROR")) {
+			return null;
+		} else {
+			return AccountData.fromString(parts[2]);
+		}
+
+	}
+
+	public int getSaldo(String UID, String pin, String rekeningID) {
+		sendToServer("GET_SALDO " + UID + " " + pin + " " + rekeningID);
 
 		String response = waitForResponse();
 
 		return getStatusFromResponse(response);
 	}
 
-	public int withdraw(String rekeningID, String pin, String amount) {
-		sendToServer("WITHDRAW " + rekeningID + " " + pin + " " + amount);
+	public int withdraw(String UID, String pin, String rekeningID, String amount) {
+		sendToServer("WITHDRAW " + UID + " " + pin + " " + rekeningID + " " + amount);
 
 		String response = waitForResponse();
 
 		return getStatusFromResponse(response);
 	}
 
-	public int transfer(String senderID, String pin, String targetID, String amount) {
-		sendToServer("TRANSFER " + senderID + " " + pin + " " + targetID + " " + amount);
+	public int transfer(String UID, String pin, String senderID, String targetID, String amount) {
+		sendToServer("TRANSFER " + UID + " " + pin + " " + senderID + " " + targetID + " " + amount);
 
 		String response = waitForResponse();
 
@@ -125,11 +139,11 @@ public class ServerCommunication {
 		}
 		System.out.println("Connection couldn't be closed.");
 	}
-	
+
 	public void clear() {
 		data = null;
-	} 
-	
+	}
+
 	public AccountData getAccountData() {
 		return data;
 	}
@@ -140,7 +154,7 @@ public class ServerCommunication {
 
 	private int getStatusFromResponse(String response) {
 		String[] parts = response.split(" ", 3);
-		
-		return parts[1];
+
+		return Integer.parseInt(parts[1]);
 	}
 }

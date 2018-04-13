@@ -107,20 +107,20 @@ public class SQLReader {
 			ArrayList<String> rekeningen = new ArrayList<String>();
 
 			while(rekeningRS.next()) {
-				rekeningen.add(rekeningRS.getString("Account"));
+				rekeningen.add(rekeningRS.getString("id"));
 			}
 
 			return new AccountData(
-				1,
 				customerID,
 				UID,
 				customerRS.getString("Name"),
 				customerRS.getString("surName"),
 				rekeningen.size(),
-				(String[]) rekeningen.toArray()
+				rekeningen.toArray(new String[rekeningen.size()])
 				);
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Something went wrong af.");
 			return null;
 		}

@@ -37,8 +37,14 @@ public class serverThread extends Thread {
 	public void run() {
 		String request;
 		while (true) {
-			// Receive request string
-			request = waitForInput();
+			try {
+				// Receive request string
+				request = waitForInput();
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("Stop listening to client");
+				return;
+			}
 
 			// Operation
 			String[] parts = request.split(" ");
@@ -46,34 +52,38 @@ public class serverThread extends Thread {
 
 			String response;
 
-			System.out.println("Client request: "+request);
+			System.out.println("Client request: " + request);
 
-			switch(operation) {
-				case "CHECK_UID": 
+			switch (operation) {
+			case "CHECK_UID":
 				response = checkUID(parts);
 				break;
 
-				case "CHECK_DATA":
-				response = checkData(parts);
+			case "CHECK_PIN":
+				response = checkPin(parts);
+				break;
+				
+			case "GET_DATA":
+				response = getData(parts);
 				break;
 
-				case "GET_SALDO":
+			case "GET_SALDO":
 				response = getSaldo(parts);
 				break;
 
-				case "WITHDRAW":
+			case "WITHDRAW":
 				response = withdraw(parts);
 				break;
 
-				case "TRANSFER":
+			case "TRANSFER":
 				response = transfer(parts);
 				break;
 
-				case "CHANGE_PIN":
+			case "CHANGE_PIN":
 				response = changePin(parts);
 				break;
 
-				default:
+			default:
 				response = makeErrorResponse(UNKNOWN_REQUEST);
 				break;
 			}
@@ -84,94 +94,107 @@ public class serverThread extends Thread {
 
 	/** CHECK_UID uid */
 	public String checkUID(String[] arguments) {
-		
-		if(arguments.length != 2){
+
+		if (arguments.length != 2) {
 			return makeErrorResponse(WRONG_NUM_ARGS);
 		}
 
 		int result = SQL.checkUID(arguments[1]);
 
-		if(result == 0) {
+		if (result == 0) {
 			return "OK 0";
 		} else {
 			return makeErrorResponse(result);
 		}
 	}
 
-	/** CHECK_DATA uid pin */
-	public String checkData(String[] arguments) {
+	/** CHECK_PIN uid pin */
+	public String checkPin(String[] arguments) {
 
-		if(arguments.length != 3){
+		if (arguments.length != 3) {
 			return makeErrorResponse(WRONG_NUM_ARGS);
 		}
 
-		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+		if (SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return makeErrorResponse(SQLReader.INCORRECT_PIN);
+		}
+		return "OK 0";
+	}
+
+	/** GET_DATA uid pin */
+	public String getData(String[] arguments) {
+
+		if (arguments.length != 3) {
+			return makeErrorResponse(WRONG_NUM_ARGS);
+		}
+
+		if (SQL.checkPin(arguments[1], arguments[2]) != 0) {
 			return makeErrorResponse(SQLReader.INCORRECT_PIN);
 		}
 
 		AccountData ad = SQL.getData(arguments[1]);
 
-		if(ad == null) {
+		if (ad == null) {
 			return makeErrorResponse(-10);
 		} else {
 			return "OK 0 " + ad.toString();
 		}
 	}
 
-	/** GET_SALDO uid pin */
+	/** GET_SALDO uid pin rekeningid */
 	public String getSaldo(String[] arguments) {
 
-		if(arguments.length != 3){
+		if (arguments.length != 4) {
 			return makeErrorResponse(WRONG_NUM_ARGS);
 		}
 
-		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
-			return makeErrorResponse(SQL.INCORRECT_PIN);
+		if (SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return makeErrorResponse(SQLReader.INCORRECT_PIN);
 		}
 
-		int result = SQL.getSaldo(arguments[1]);
+		int result = SQL.getSaldo(arguments[3]);
 
-		if(result >= 0) {
+		if (result >= 0) {
 			return "OK " + result; // FIXME hacky
 		} else {
 			return makeErrorResponse(result);
 		}
 	}
 
-	/** WITHDRAW uid pin amount */
+	/** WITHDRAW uid pin rekeningid amount */
 	public String withdraw(String[] arguments) {
 
-		if(arguments.length != 4){
+		if (arguments.length != 5) {
 			return makeErrorResponse(WRONG_NUM_ARGS);
 		}
 
-		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+		if (SQL.checkPin(arguments[1], arguments[2]) != 0) {
 			return "ERROR pin incorrect";
 		}
 
-		int result = SQL.withdraw(arguments[1], Integer.parseInt(arguments[3]));
+		int result = SQL.withdraw(arguments[3], Integer.parseInt(arguments[4]));
 
-		if(result == SQL.OK) {
+		if (result == SQLReader.OK) {
 			return "OK 0";
 		} else {
 			return makeErrorResponse(result);
 		}
 	}
 
-	/** TRANSFER uid pin target_uid amount */
+	/** TRANSFER uid pin sender_id target_id amount */
 	public String transfer(String[] arguments) {
 
-		if(arguments.length != 5){
+		if (arguments.length != 6) {
 			return makeErrorResponse(WRONG_NUM_ARGS);
 		}
 
-		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
-			return makeErrorResponse(SQL.INCORRECT_PIN);
+		if (SQL.checkPin(arguments[1], arguments[2]) != 0) {
+			return makeErrorResponse(SQLReader.INCORRECT_PIN);
 		}
 
-		int result = SQL.transfer(arguments[1], arguments[3], Integer.parseInt(arguments[4]));
+		int result = SQL.transfer(arguments[3], arguments[4], Integer.parseInt(arguments[5]));
 
-		if(result == SQL.OK) {
+		if (result == SQLReader.OK) {
 			return "OK 0";
 		} else {
 			return makeErrorResponse(result);
@@ -181,56 +204,64 @@ public class serverThread extends Thread {
 	/** CHANGE_PIN uid pin pin2 */
 	public String changePin(String[] arguments) {
 
-		if(arguments.length != 4){
+		if (arguments.length != 4) {
 			return makeErrorResponse(WRONG_NUM_ARGS);
 		}
 
-		if(SQL.checkPin(arguments[1], arguments[2]) != 0) {
+		if (SQL.checkPin(arguments[1], arguments[2]) != 0) {
 			return "ERROR pin incorrect";
 		}
 
 		int result = SQL.changePin(arguments[1], arguments[3]);
 
-		if(result == SQL.OK) {
+		if (result == SQLReader.OK) {
 			return "OK 0";
 		} else {
 			return makeErrorResponse(result);
 		}
 	}
 
-	public String waitForInput() {
+	public String waitForInput() throws IOException {
 		System.out.println("Waiting for input.");
 		String message = "";
 		while (true) {
-			try {
-				message = input.readLine();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+
+			message = input.readLine();
+
 			if (!message.equals("")) {
 				System.out.println("Client: " + socket.getInetAddress() + " said: " + message);
 				return message;
 			}
 		}
 	}
-	
+
 	private void sendToClient(String message) {
-		System.out.println("Sending message to client: " +message);
+		System.out.println("Sending message to client: " + message);
 		output.println(message);
 	}
- 
+
 	private String makeErrorResponse(int errorCode) {
-		switch(errorCode) {
-			case WRONG_NUM_ARGS: return "ERROR " + errorCode + " wrong number of args";
-			case UNKNOWN_REQUEST: return "ERROR " + errorCode + " unknown request";
-			case SQLReader.SERVER_ERROR: return "ERROR "+errorCode+" server error";
-			case SQLReader.UNKNOWN_CARD: return "ERROR "+errorCode+" unknown card";
-			case SQLReader.BLOCKED: return "ERROR "+errorCode+" card blocked";
-			case SQLReader.LOW_BALANCE: return "ERROR "+errorCode+" low balance";
-			case SQLReader.UNKNOWN_ACCOUNT: return "ERROR "+errorCode+" unknown account";
-			case SQLReader.INVALID_PIN: return "ERROR "+errorCode+" invalid pin";
-			case SQLReader.INCORRECT_PIN: return "ERROR "+errorCode+" incorrect pin";
-			default: return "ERROR 0 unknown error";
+		switch (errorCode) {
+		case WRONG_NUM_ARGS:
+			return "ERROR " + errorCode + " wrong number of args";
+		case UNKNOWN_REQUEST:
+			return "ERROR " + errorCode + " unknown request";
+		case SQLReader.SERVER_ERROR:
+			return "ERROR " + errorCode + " server error";
+		case SQLReader.UNKNOWN_CARD:
+			return "ERROR " + errorCode + " unknown card";
+		case SQLReader.BLOCKED:
+			return "ERROR " + errorCode + " card blocked";
+		case SQLReader.LOW_BALANCE:
+			return "ERROR " + errorCode + " low balance";
+		case SQLReader.UNKNOWN_ACCOUNT:
+			return "ERROR " + errorCode + " unknown account";
+		case SQLReader.INVALID_PIN:
+			return "ERROR " + errorCode + " invalid pin";
+		case SQLReader.INCORRECT_PIN:
+			return "ERROR " + errorCode + " incorrect pin";
+		default:
+			return "ERROR 0 unknown error";
 		}
 	}
 
