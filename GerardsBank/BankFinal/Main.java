@@ -3,6 +3,7 @@ package BankFinal;
 import java.awt.EventQueue;
 
 import BankPanels.*;
+import ServerCommunication.AccountData;
 import ServerCommunication.ServerCommunication;
 
 public class Main {
@@ -11,8 +12,11 @@ public class Main {
 	private int currentScreen = 0;
 	Background background;
 	ServerCommunication server;
+
 	String UID;
 	String pin;
+	AccountData data;
+	String currentRekening = "";
 
 	int pinCharCount;
 	String[] stars = { "", "*", "**", "***", "****" };
@@ -23,7 +27,8 @@ public class Main {
 	}
 
 	public Main() {
-		server = new ServerCommunication("localhost", 6789, ATM);
+		// 192.168.178.38
+		server = new ServerCommunication("145.24.222.245", 8989, ATM);
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -51,35 +56,43 @@ public class Main {
 							int serverResponse = server.checkUID(input);
 							if (serverResponse != 0) {
 								background.showMessage(serverResponse);
+							} else {
+								pinCharCount = 0;
+								changeScreen(1);
 							}
-							changeScreen(1);
-						} else if ((input.contains("KEY:")) && currentScreen == 1) {
+						} else if (input.contains("KEY:")) {
 							System.out.println("I received a key.");
 							input = input.substring(input.indexOf(":") + 1);
-							
-							if(isNumeric(input)) {
-								pin += input;
-								pinCharCount++;
-							
-								background.setPanel(new login2(stars[pinCharCount]));
-							
-							} else if(input.equals("#")) {
-								int serverResponse = server.checkPin(UID, pin);
 
-								if (serverResponse != 0) {
-									background.showMessage(serverResponse);
+							if (currentScreen == 1) {
+								if (isNumeric(input)) {
+									pin += input;
+									pinCharCount++;
+
+									changeScreen(1);
+
+								} else if (input.equals("#")) {
+									int serverResponse = server.checkPin(UID, pin);
+
+									if (serverResponse != 0) {
+										background.showMessage(serverResponse);
+										pin = "";
+										pinCharCount = 0;
+										changeScreen(0);
+									} else {
+										data = server.getData(UID, pin);
+										currentRekening = data.getRekening(0);
+										changeScreen(2);
+									}
+								} else if (input.equals("*")) {
 									pin = "";
 									pinCharCount = 0;
-									background.setPanel(new login2(stars[pinCharCount]));
+									changeScreen(1);
 								}
-								server.getData(UID, pin);
-								changeScreen(2);
-							} else if(input.equals("*")) {
-								pin = "";
-								pinCharCount = 0;
-								background.setPanel(new login2(stars[pinCharCount]));
+							} else {
+								changeScreen(getNextScreen(input));
 							}
-						}	
+						}
 					}
 				}
 			}
@@ -97,47 +110,54 @@ public class Main {
 		System.out.println("Screen changed to: " + t);
 		switch (t) {
 		case 0:
+			data = null;
+			UID = null;
+			pin = null;
+			currentRekening = null;
 			this.background.setPanel(new login1());
 			break;
 		case 1:
-			this.background.setPanel(new login2(stars[0]));
+			this.background.setPanel(new login2(stars[pinCharCount]));
 			break;
 		case 2:
-			this.background.setPanel(
-					new homeMenu(server.getAccountData().getName() + " " + server.getAccountData().getSurname()));
+			this.background.setPanel(new homeMenu(data.getName() + " " + data.getSurname()));
 			break;
 		case 3:
-			// geld opnemen
+			this.background.setPanel(new saldo(currentRekening, server.getSaldo(UID, pin, currentRekening)));
 			break;
 		case 4:
-			// geld overboeken
+			this.background.setPanel(new geldMenu());
 			break;
 		case 5:
-			// wijzigen menu
+			this.background.setPanel(new geldOpnemen());
 			break;
 		case 6:
-			// pincode wijzigen
+			this.background.setPanel(new geldOverboeken());
 			break;
 		case 7:
-			// adres wijzigen | UIT
+			this.background.setPanel(new rekeningKiezen());
 			break;
 		case 8:
-			// naam wijzigen | UIT
+			this.background.setPanel(new pinWijzigen());
 			break;
 		case 9:
-			// saldo
+			// naam wijzigen | UIT
 			break;
 		}
 	}
-	
+
 	private boolean isNumeric(String input) {
-		
-		for(int i = 0; i < numericChars.length; i++) {
-			if(input.equals(numericChars[i])) {
+
+		for (int i = 0; i < numericChars.length; i++) {
+			if (input.equals(numericChars[i])) {
 				return false;
 			}
 		}
-		
+
 		return true;
+	}
+	
+	private int getNextScreen(String key) {
+		return this.background.getNextScreen(key, currentScreen);
 	}
 }

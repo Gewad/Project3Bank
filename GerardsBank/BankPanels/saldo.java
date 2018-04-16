@@ -3,20 +3,14 @@ package BankPanels;
 import java.awt.Color;
 import java.awt.Font;
 
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
-public class login2 extends JPanel {
-	
-	String pin;
-	int pinCharCount = 0;
+public class saldo extends JPanel {
 
-	/**
-	 * Create the panel.
-	 */
-	public login2(String input) {
+	public saldo(String rekening, int saldo) {
 		this.setBounds(150, 150, 1620, 930);
 		this.setBackground(Color.WHITE);
 		setLayout(null);
@@ -31,31 +25,25 @@ public class login2 extends JPanel {
 		txtMid.setBounds(500, 250, 620, 179);
 		txtMid.setFont(new Font("Tahoma", Font.PLAIN, 30));
 		txtMid.setBackground(new Color(1.0f,1.0f,1.0f,0.0f));
-		txtMid.setText("Voer uw pincode in. \n\r * - Opnieuw invullen \n\r # - Bevestigen \n\r D - Terug");
+		txtMid.setText("Saldo voor rekening: " + rekening + ",\n\r bedraagt: " + saldo + ".");
 		txtMid.setEditable(false);
 		this.add(txtMid);
 		txtMid.setVisible(true);
 		
-		JTextField textField = new JTextField();
-		textField.setBounds(690, 440, 240, 50);
-		textField.setFont(new Font("Dialog", Font.PLAIN, 30));
-		textField.setText(input);
-		this.add(textField);
-		textField.setColumns(4);
-		textField.setVisible(true);
-		textField.setBackground(new Color(1.0f,1.0f,1.0f,0.0f));
+		JButton btnBack = new JButton("* - Terug.");
+		btnBack.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnBack.setBounds(1155, 734, 450, 90);
+		btnBack.setVisible(false);
+		this.add(btnBack);
+		btnBack.setVisible(true);
 		
-	}
-	
-	public int setPin(String input) {
-		pinCharCount += 1;
-		pin += input;
+		JButton btnEnd = new JButton("# - Beëindig sessie.");
+		btnEnd.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnEnd.setBounds(1155, 837, 450, 90);
+		btnEnd.setVisible(false);
+		this.add(btnEnd);
+		btnEnd.setVisible(true);
 		
-		return pinCharCount;
-	}
-	
-	public String getPin() {
-		return pin;
 	}
 
 }

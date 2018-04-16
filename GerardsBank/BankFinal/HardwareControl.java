@@ -14,7 +14,7 @@ public class HardwareControl implements SerialPortEventListener {
 	SerialPort serialPort;
         /** The port we're normally going to use. */
 	private static final String PORT_NAMES[] = { 
-			"COM6", // Windows
+			"COM3", // Windows
 	};
 	/**
 	* A BufferedReader which will be fed by a InputStreamReader 
@@ -119,7 +119,7 @@ public class HardwareControl implements SerialPortEventListener {
 	}
 	
 	public String getInput() {
-		//System.out.println("I received: " + arduinoInput);
+		try {Thread.sleep(100);} catch(Exception e) {}
 		String tmp;
 		tmp = arduinoInput;
 		arduinoInput = "";

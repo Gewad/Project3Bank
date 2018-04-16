@@ -30,58 +30,88 @@ public class homeMenu extends JPanel {
 		txtMid.setBounds(500, 250, 620, 179);
 		txtMid.setFont(new Font("Tahoma", Font.PLAIN, 30));
 		txtMid.setBackground(new Color(1.0f,1.0f,1.0f,0.0f));
-		txtMid.setText("Welkom." + nameCombined);
+		txtMid.setText("Welkom " + nameCombined + ".");
 		txtMid.setEditable(false);
 		this.add(txtMid);
 		txtMid.setVisible(true);
-		/*
-		JButton btnLeftF = new JButton("");
-		btnLeftF.setBounds(939, 23, 33, 9);
+		
+		JButton btnLeftF = new JButton("A - Saldo");
 		btnLeftF.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnLeftF.setBounds(15, 250, 450, 90);
 		btnLeftF.setVisible(false);
 		this.add(btnLeftF);
+		btnLeftF.setVisible(true);
 		
-		JButton btnLeftS = new JButton("");
-		btnLeftS.setBounds(977, 23, 33, 9);
+		JButton btnLeftS = new JButton("B - Geld opnemen/overboeken");
 		btnLeftS.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnLeftS.setBounds(15, 400, 450, 90);
 		btnLeftS.setVisible(false);
 		this.add(btnLeftS);
+		btnLeftS.setVisible(true);
 		
-		JButton btnLeftT = new JButton("");
-		btnLeftT.setBounds(1015, 23, 33, 9);
+		JButton btnLeftT = new JButton("C - Rekening kiezen");
 		btnLeftT.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnLeftT.setBounds(15, 550, 450, 90);
 		btnLeftT.setVisible(false);
 		this.add(btnLeftT);
+		btnLeftT.setVisible(true);
 		
-		JButton btnRightF = new JButton("");
-		btnRightF.setBounds(1053, 23, 33, 9);
+		JButton btnRightF = new JButton("D - Wijziging doorgeven");
 		btnRightF.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnRightF.setBounds(1155, 250, 450, 90);
 		btnRightF.setVisible(false);
 		this.add(btnRightF);
-		
-		JButton btnRightS = new JButton("");
-		btnRightS.setBounds(1091, 23, 33, 9);
-		btnRightS.setFont(new Font("Tahoma", Font.BOLD, 30));
-		btnRightS.setVisible(false);
-		this.add(btnRightS);
-		
-		JButton btnRightT = new JButton("");
-		btnRightT.setBounds(1129, 23, 33, 9);
-		btnRightT.setFont(new Font("Tahoma", Font.BOLD, 30));
-		btnRightT.setVisible(false);
-		this.add(btnRightT);
+		btnRightF.setVisible(true);
 		
 		JButton btnBack = new JButton("Terug.");
-		btnBack.setBounds(1167, 5, 129, 45);
 		btnBack.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnBack.setBounds(1155, 734, 450, 90);
 		btnBack.setVisible(false);
 		this.add(btnBack);
+		btnBack.setVisible(false);
 		
-		JButton btnEnd = new JButton("Beëindig sessie.");
-		btnEnd.setBounds(1301, 5, 273, 45);
+		JButton btnEnd = new JButton("*/# - Beëindig sessie.");
 		btnEnd.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnEnd.setBounds(1155, 837, 450, 90);
 		btnEnd.setVisible(false);
 		this.add(btnEnd);
+		btnEnd.setVisible(true);
+		
+		/*
+		btnRightS = new JButton("");
+		btnRightS.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnRightS.setBounds(1155, 400, 450, 90);
+		btnRightS.setVisible(false);
+		frame.getContentPane().add(btnRightS);
+		
+		btnRightT = new JButton("");
+		btnRightT.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnRightT.setBounds(1155, 550, 450, 90);
+		btnRightT.setVisible(false);
+		frame.getContentPane().add(btnRightT);
+		
+		btnBack = new JButton("Terug.");
+		btnBack.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				determineBack();
+			}
+		});
+		btnBack.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnBack.setBounds(1155, 734, 450, 90);
+		btnBack.setVisible(false);
+		frame.getContentPane().add(btnBack);
+		
+		btnEnd = new JButton("Beëindig sessie.");
+		btnEnd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				UID = "0";
+				changeScreen(0);
+			}
+		});
+		btnEnd.setFont(new Font("Tahoma", Font.BOLD, 30));
+		btnEnd.setBounds(1155, 837, 450, 90);
+		btnEnd.setVisible(false);
+		frame.getContentPane().add(btnEnd);
 		
 		final JTextField textField = new JTextField();
 		textField.setBounds(757, 55, 106, 45);

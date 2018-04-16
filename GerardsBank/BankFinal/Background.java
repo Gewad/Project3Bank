@@ -9,23 +9,16 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 
 import BankPanels.login1;
 
 public class Background extends JFrame {
 
+	private static final long serialVersionUID = -742081557011306597L;
 	private JPanel panel = new login1();
 	private JPanel contentPane;
 
-	/**
-	 * Launch the application.
-	 */
-
-	/**
-	 * Create the frame.
-	 */
 	public Background() {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setBounds(0, 0, 1920, 1080);
@@ -76,8 +69,39 @@ public class Background extends JFrame {
 		case 5: return new JOptionPane("Ingevoerde pincode is ongeldig.", JOptionPane.WARNING_MESSAGE);
 		case 6: return new JOptionPane(Test.hashCode(), JOptionPane.WARNING_MESSAGE);
 		case 7: return new JOptionPane("Ingevoerde pincode is incorrect.", JOptionPane.WARNING_MESSAGE);
+		case 9: return new JOptionPane("Er is iets fout gegaan.", JOptionPane.WARNING_MESSAGE);
 		default : return new JOptionPane("Er is iets fout gegaan.", JOptionPane.WARNING_MESSAGE);
 		}
 		
+	}
+	
+	public int getNextScreen(String key, int currentScreen) {
+		System.out.println("Deciding next screen for: " + key + ", on screen: " + currentScreen + ".");
+		if(currentScreen == 2) {
+			switch (key) {
+            	case "*":
+            		return 0;
+            	case "A":
+            		return 3;
+            	case "B":
+            		return 4;
+            	case "C":
+            		return 7;
+            	default:
+            		return 0;
+			}
+		} else if(currentScreen == 3) {
+			switch (key) {
+        	case "*":
+        		return 2;
+        	case "#":
+        		return 0;
+        	default:
+        		return 2;
+		}
+	}
+		
+		this.showMessage(9);
+		return 0;
 	}
 }
