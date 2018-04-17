@@ -35,28 +35,28 @@ public class homeMenu extends JPanel {
 		this.add(txtMid);
 		txtMid.setVisible(true);
 		
-		JButton btnLeftF = new JButton("A - Saldo");
+		JButton btnLeftF = new JButton("1 - Saldo");
 		btnLeftF.setFont(new Font("Tahoma", Font.BOLD, 30));
 		btnLeftF.setBounds(15, 250, 450, 90);
 		btnLeftF.setVisible(false);
 		this.add(btnLeftF);
 		btnLeftF.setVisible(true);
 		
-		JButton btnLeftS = new JButton("B - Geld opnemen/overboeken");
+		JButton btnLeftS = new JButton("2 - Geld opnemen/overboeken");
 		btnLeftS.setFont(new Font("Tahoma", Font.BOLD, 30));
 		btnLeftS.setBounds(15, 400, 450, 90);
 		btnLeftS.setVisible(false);
 		this.add(btnLeftS);
 		btnLeftS.setVisible(true);
 		
-		JButton btnLeftT = new JButton("C - Rekening kiezen");
+		JButton btnLeftT = new JButton("3 - Rekening kiezen");
 		btnLeftT.setFont(new Font("Tahoma", Font.BOLD, 30));
 		btnLeftT.setBounds(15, 550, 450, 90);
 		btnLeftT.setVisible(false);
 		this.add(btnLeftT);
 		btnLeftT.setVisible(true);
 		
-		JButton btnRightF = new JButton("D - Wijziging doorgeven");
+		JButton btnRightF = new JButton("4 - Wijziging doorgeven");
 		btnRightF.setFont(new Font("Tahoma", Font.BOLD, 30));
 		btnRightF.setBounds(1155, 250, 450, 90);
 		btnRightF.setVisible(false);
@@ -70,7 +70,7 @@ public class homeMenu extends JPanel {
 		this.add(btnBack);
 		btnBack.setVisible(false);
 		
-		JButton btnEnd = new JButton("*/# - Beëindig sessie.");
+		JButton btnEnd = new JButton("C/D - Beëindig sessie.");
 		btnEnd.setFont(new Font("Tahoma", Font.BOLD, 30));
 		btnEnd.setBounds(1155, 837, 450, 90);
 		btnEnd.setVisible(false);
